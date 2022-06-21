@@ -1,19 +1,5 @@
-# torrent
+练习项目：在线购票系统
 
-## Project setup
-```
-yarn install
-```
+使用几个自己用原生js写的canvas动画demo和交互demo
 
-### Compiles and hot-reloads for development
-```
-yarn serve
-```
-
-### Compiles and minifies for production
-```
-yarn build
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+顺便练习一下git~

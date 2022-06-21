@@ -1,6 +1,33 @@
 <!DOCTYPE html>
 <html lang="">
   <head>
+   <% for (var i in htmlWebpackPlugin.options.CDN && htmlWebpackPlugin.options.CDN.css) { %>
+      <link href="<%= htmlWebpackPlugin.options.CDN.css[i] %>" rel="stylesheet">
+    <% } %>
+    <!-- 使用 CDN 的 CSS 文件 end -->
+
+    <!-- 使用 CDN 的 JS 文件 -->
+    <% for (var i in htmlWebpackPlugin.options.CDN && htmlWebpackPlugin.options.CDN.js) { %>
+      <script src="<%= htmlWebpackPlugin.options.CDN.js[i] %>" defer="defer"></script>
+    <% } %>
+    <!-- 使用 CDN 的 JS 文件 end -->
+
+<script type="text/javascript" src="./alert.js"></script>
+<link rel="stylesheet" type="text/css" href="./1.css">
+<!-- 引入组件库 -->
+
+
+  <style type="text/css">
+  	body,html{height:100%;min-width:600px;
+  		margin: 0;overflow: hidden;
+
+  		min-height: 400px;}
+  </style>
+  		
+	
+
+
+
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
@@ -11,7 +38,94 @@
     <noscript>
       <strong>We're sorry but <%= htmlWebpackPlugin.options.title %> doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
     </noscript>
-    <div id="app"></div>
+<div id="App">
+   <div id="idloading">
+      <p class="load_title">正在加载系统资源，请耐心等待...</p>
+    </div>
+<div class="idcontent">
+  <div class="box">
+    <!-- 外层魔方 -->
+    <div class="out-front">R</div>
+    <div class="out-back">R</div>
+    <div class="out-left">R</div>
+    <div class="out-right">R</div>
+    <div class="out-top">R</div>
+    <div class="out-bottom">R</div>
+    <!-- 内层魔方 -->
+    <span class="in-front"></span>
+    <span class="in-back"></span>
+    <span class="in-left"></span>
+    <span class="in-right"></span>
+    <span class="in-top"></span>
+    <span class="in-bottom"></span>
+  </div>
+</div>
+
+</div>
+
+
+<script >
+
+  var clickNum = 1;    //点击次数
+function a() {
+  // 如果点击次数是奇数就展开，偶数就收起
+  if (clickNum % 2 == 0) {
+    // 收起
+  document.getElementsByClassName('out-front')[0].style.transform='translateZ(100px)' 
+
+  document.getElementsByClassName('out-back')[0].style.transform='translateZ(-100px) rotateY(180deg)' 
+
+ document.getElementsByClassName('out-left')[0].style.transform='translateX(-100px) rotateY(-90deg)' 
+
+ document.getElementsByClassName('out-right')[0].style.transform='translateX(100px) rotateY(90deg)' 
+
+ document.getElementsByClassName('out-top')[0].style.transform='translateY(-100px) rotateX(90deg)' 
+ document.getElementsByClassName('out-bottom')[0].style.transform='translateY(100px) rotateX(-90deg)' 
+  } else {
+    // 展开
+
+      document.getElementsByClassName('out-front')[0].style.transform='translateZ(200px)' 
+
+  document.getElementsByClassName('out-back')[0].style.transform='translateZ(-200px) rotateY(180deg)' 
+
+ document.getElementsByClassName('out-left')[0].style.transform='translateX(-200px) rotateY(-90deg)' 
+
+ document.getElementsByClassName('out-right')[0].style.transform='translateX(200px) rotateY(90deg)' 
+
+ document.getElementsByClassName('out-top')[0].style.transform='translateY(-200px) rotateX(90deg)' 
+ document.getElementsByClassName('out-bottom')[0].style.transform='translateY(200px) rotateX(-90deg)' 
+
+
+  }
+  clickNum++;
+};
+
+// box 的所有子元素添加鼠标手势样式
+
+
+let rotateX=0
+let timer=null
+function rotate(){
+
+clearInterval(timer);
+document.getElementsByClassName('box')[0].style.transform=`rotate3d(1,1,0,${rotateX}deg)`
+timer=setInterval(()=>{
+  rotateX+=120;
+  rotate()
+
+},1000)
+  
+}
+
+const timer1=setInterval(a,1000);
+rotate()
+
+
+window.onload=function(){
+  clearInterval(timer);
+  clearInterval(timer1);
+}
+</script>
     <!-- built files will be auto injected -->
   </body>
 </html>
