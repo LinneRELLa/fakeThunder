@@ -24,7 +24,7 @@ routes:[
 	children:[
 
 {path:'/DetaiInfo',
-	name:'DetaiInfo',
+	name:'DetailInfo',
 	component:DetaiInfo,
 }
 	]

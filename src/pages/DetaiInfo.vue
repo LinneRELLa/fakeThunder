@@ -106,7 +106,7 @@ created(){
 
 
    ws.addEventListener('message',(e)=>{
-
+console.log(JSON.parse(e.data))
     const res=JSON.parse(e.data)
 
 
@@ -117,6 +117,7 @@ if(res.id&&res.id.match(/^DetInfo.*/)){
    	setTimeout(()=>{GetInfo(vc.$route.query.id)},1000);
 vc.Name=vc.$route.query.Name;
 if(vc.files==false){
+
 for (let i=0;i<res.result.files.length&&i<=50;i++) {
 
 	const x=res.result.files[i].path.split('/')

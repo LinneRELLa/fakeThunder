@@ -1,6 +1,7 @@
 <template>
 	
 	<div id="bkg">
+
     <div id="MessageLeft">
     <div id="confirm" v-if="todel" class="toollip">
       确认删除?
@@ -32,7 +33,20 @@
 
 
     <button id="dnd" @click="dnd">+  新建</button>
-		<div  id="msg"></div>
+  
+		<div  id="msg" :class="{red:aria2.con=='下载引擎未连接'}">
+{{aria2.con}}
+      <div id="Aria2status">
+    {{aria2.status}}  
+    </div>
+
+
+  </div>
+
+  <div class="btntop" @click="openAria2" v-if="aria2.con=='下载引擎未连接'">
+    尝试连接
+  </div>
+    <div v-else class="btntop" @click="closeEngine">关闭下载引擎</div>
         <br>
            <div id="display"></div>
           <div class="tasktitle">下载/做种中</div>
@@ -61,6 +75,7 @@
 <div class="operate">
           <i class="el-icon-delete btn" @click="Todel(x)"></i>
        <i class="el-icon-video-pause btn" @click="Pause($event,x)"></i>
+       <i class="el-icon-files btn" @click="tst(x)"></i>
 </div>
 
         </div>
@@ -119,6 +134,7 @@
           
     <div class="operate">
           <i class="el-icon-delete btn" @click="Todel(x)"></i>
+          <i class="el-icon-files btn" @click="tst(x)"></i>
        
 </div>
         </div>
@@ -138,6 +154,18 @@
 
 
 <script>
+
+  const { ipcRenderer, remote } = window.require('electron')
+const fs = window.require('fs')
+const iconv = require('iconv-lite');
+/*const kill=window.require('tree-kill');*/
+
+iconv.skipDecodeWarning = true;
+
+const proc = window.require('child_process');
+const path = window.require('path');
+const publicpath=('./public/aria2')
+
 	const Process=()=>import('../components/Process');
  
 	export default{
@@ -152,42 +180,69 @@ data(){
           tasks:{
             active:[],
             waiting:[],
-            stopped:[]
+            stopped:[], 
                      
 
           },
           ws:null,
           count:0,
           ToRemoved:[],
+          aria2:{
+            con:'下载引擎未连接',
+            status:'',
+            pid:null,
+          }
   }
 }
   ,created(){
 
-  const vc=this;
+     const vc=this;
+    
+    (async function(){
+
+      const status=await vc.getStatus();
+vc.aria2.pid=status.match(/PID:.*?([0-9]{1,})/)[1]
+console.log(vc.aria2.pid);
+vc.openAria2();
+
+
+    })()
+
+
+
+
+ 
 
 const ws=new WebSocket('ws://localhost:6800/jsonrpc');
 vc.ws=ws
+
+
+
+
 console.log(this);
-(async function (){
+(async function conncet(){
 	await new Promise(resolve=>{
      ws.addEventListener('open',function(){
+      console.log(ws)
      	console.log('con');
                  vc.$nextTick(()=>{
-const div=document.querySelector('#msg')
-            	div.innerHTML='下载引擎已连接'
-
+vc.aria2.con='下载引擎已连接';
 resolve();
+
             })
      })
   })
 
+
+ 
  vc.getInfo();
 })()
 
 
+
+
  vc.$nextTick(()=>{
- 	const btn=document.querySelector('#sub')
- btn.onclick=vc.getInfo;
+
 })
 
 ws.addEventListener('message',(e)=>{
@@ -236,6 +291,11 @@ if(!res.error){
 })
 ws.addEventListener('close',()=>{
 console.log('服务器连接断开')
+
+
+
+
+
 })
 
 
@@ -248,8 +308,10 @@ console.log('服务器连接断开')
 
 
 	},
+
 	beforeDestroy(){
 		ws.close();
+    closeEngine();
 	},
   computed:{
 Rdnd(){
@@ -262,7 +324,57 @@ Rdnd(){
 
 
 
-  methods:{
+  methods:{ 
+    openAria2(){
+      console.log(this)
+if(this.aria2.status.match(/信息: 没有运行的任务匹配指定标准。/)){
+  proc.exec('cd '+ `"${path.resolve('./public/aria2/')}"`+'&aria2c.exe --conf-path=aria2.conf',{ encoding: 'buffer' },(err,res)=>{
+  console.log(err,iconv.decode(res,'cp936'))
+})
+}
+
+},
+    closeEngine(){
+           /* if(this.aria2.pid){
+              kill(this.aria2.pid,'SIGKILL',(err)=>{console.log(err)})
+            }*/
+    },
+    getStatus(){
+      return new Promise((resolve,reject)=>{
+      console.log(`${path.resolve(publicpath,'Status.bat')}`)
+const sta=proc.exec(`H:\\ROREL\\aria2-1.36.0-win-64bit-build1\\Status.bat`,{ encoding: 'buffer' },(err,res)=>{
+ 
+  this.aria2.status=iconv.decode(res,'CP936');
+  resolve(iconv.decode(res,'CP936'))
+})
+
+setTimeout(() => {
+
+  sta.kill()
+
+ 
+
+}, 1000);
+
+
+      })
+
+    }
+    ,
+    tst(x){
+
+      const p=path.resolve(publicpath,x.dir)
+     
+
+
+console.log('explorer '+`"${p}"`)
+proc.exec('explorer '+`"${p}"`,(err,res)=>{
+  console.log(err||res)
+})
+
+
+
+    },
     Post(){
 
 if(this.newTask.match(/^magnet:\?xt=urn:btih:[0-9a-fA-F]{40,}.*$/)){
@@ -371,12 +483,33 @@ this.newTask='磁力链接';
     return `${Math.round(x.completedLength/1024/1024*10)/10}MB/${Math.round(x.totalLength/1024/1024*10)/10}MB ${Math.round(x.completedLength/x.totalLength*100)}% `
   }
   else return '删除中'
-  }
+  },
+  },
+  destroyed(){
+          
   }
 }
 </script>
 
-<style>
+<style lang="less">
+
+#msg{
+  #Aria2status{
+position: absolute;
+display: none;
+width: 200px;
+background:rgb(244,245,247);
+z-index: 3;
+}
+
+&:hover{
+    #Aria2status{
+display: block;
+}
+}
+
+
+}
   .tasks{
   
   
@@ -595,5 +728,18 @@ left: 40px;
   float: left;
   user-select: none;
   margin: 10px 20px;
+}
+.red{
+  color:red;
+}
+.btntop{
+  border: none;
+  border-radius: 3px;
+  background: rgba(231,239,251,0.8);
+  color: rgba(63,133,255);
+  cursor: pointer;
+font-size: 18px;
+  float: left;
+   margin: 10px 20px;
 }
 </style>
