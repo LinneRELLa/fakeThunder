@@ -7,6 +7,15 @@ module.exports = defineConfig({
   transpileDependencies: true,
      publicPath:'',
      productionSourceMap:false,
+     pluginOptions:{
+           electronBuilder: {
+        builderOptions: {
+           extraResources: [
+                {from: './public/aria2', to: '../public/aria2'}
+            ]
+        }
+    }
+     },
      
       configureWebpack: {
      
