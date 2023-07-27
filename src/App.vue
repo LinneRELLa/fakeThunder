@@ -4,9 +4,12 @@
 <div id="root">
 
 	<div id="top">
+
 		<img src="../public/xunlei.png">
-       <div class="xiaozi">狗都不用</div>
-	</div>
+		<div class="close" @click="closewin">X</div>
+         <div class="minimize" @click="minimize">一</div>
+	</div> 
+
 
 
 	<div id="bottom">
@@ -73,6 +76,14 @@ mounted(){
 	})
 },
 methods:{
+	minimize(){
+this.$electron.ipcRenderer.send('window-min');
+	},
+closewin () {
+	console.log('1');
+     this.$electron.ipcRenderer.send('window-close');
+}
+	,
 
 	jieliu(){
 
@@ -112,6 +123,7 @@ color: none;
 		flex-direction: column;
 
 overflow: hidden;
+position: relative;
 
 		}
 		#root #top{height:42px;width:100%;
@@ -120,17 +132,7 @@ overflow: hidden;
 
           overflow: hidden;
 			img{float: left;}
-			div{
-				float: left;
-				color: black;
-				height: 42px;
-				line-height: 42px;
-				position:relative;
-				font-weight: bolder;
-				left: -30px;
-				top: 5px;
-				font-size:10px;
-			}
+		
 
 }
 
@@ -234,7 +236,49 @@ a {
     color:white;
 }
 	
-	#top{-webkit-app-region: drag}
+	#top{-webkit-app-region: drag;
+	
+	
+
+	
+
+	}
+	.close:hover{
+		 cursor: pointer;
+		 color: red;
+	}
+			.close{
+				-webkit-app-region: no-drag;
+				position: absolute;
+				right: 15px;
+				font-family: 微软雅黑;
+				top: 50%;
+				top: 10px;
+				color: black;
+				z-index: 1;
+			
+
+			
+                
+			}	
+				.minimize:hover{
+		 cursor: pointer;
+		 color: red;
+	}
+			.minimize{
+				-webkit-app-region: no-drag;
+				position: absolute;
+				right: 30px;
+				
+				top: 50%;
+				top: 10px;
+				color: black;
+				z-index: 1;
+			
+
+			
+                
+			}
 	.quit{
 
 	-webkit-app-region: no-drag;
@@ -248,6 +292,9 @@ right: 4px;
 top:-4px;
 &:hover{color: rgb(33,120,255);}
 			}
+
+		
+		
 </style>
 
 <!-- 

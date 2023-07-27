@@ -5,6 +5,8 @@ import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
+const { ipcMain } = require('electron')
+
 
 // Scheme must be registered before the app is ready
 protocol.registerSchemesAsPrivileged([
@@ -28,6 +30,13 @@ async function createWindow() {
       enabkeRemoteModule:true,
     }
   })
+  ipcMain.on('window-min',function (){
+ win.minimize();
+ })
+    ipcMain.on('window-close',function (){
+ win.close();
+ })
+
 
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     // Load the url of the dev server if in development mode

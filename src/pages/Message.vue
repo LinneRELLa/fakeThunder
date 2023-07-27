@@ -37,7 +37,9 @@
 		<div  id="msg" :class="{red:aria2.con=='下载引擎未连接'}">
 {{aria2.con}}
       <div id="Aria2status">
-    {{aria2.status}}  
+    {{aria2.status}} 
+
+    Aria2路径:<input  v-model="publicpath" class="path"> 
     </div>
 
 
@@ -46,7 +48,12 @@
   <div class="btntop" @click="openAria2" v-if="aria2.con=='下载引擎未连接'">
     尝试连接
   </div>
-    <div v-else class="btntop" @click="closeEngine">关闭下载引擎</div>
+  <div v-else class="red btntop" @click="closeEngine">
+    关闭下载引擎
+  </div>
+
+  
+    
         <br>
            <div id="display"></div>
           <div class="tasktitle">下载/做种中</div>
@@ -164,7 +171,7 @@ iconv.skipDecodeWarning = true;
 
 const proc = window.require('child_process');
 const path = window.require('path');
-const publicpath=('./public/aria2')
+
 
 	const Process=()=>import('../components/Process');
  
@@ -177,6 +184,7 @@ data(){
 	return {data:'sth to send',
          todel:null,
          newTask:null,
+         publicpath:'./public/aria2',
           tasks:{
             active:[],
             waiting:[],
@@ -194,17 +202,20 @@ data(){
           }
   }
 }
-  ,created(){
+  ,
+mounted(){
+
+},
+  created(){
+
 
      const vc=this;
     
     (async function(){
 
-      const status=await vc.getStatus();
-vc.aria2.pid=status.match(/PID:.*?([0-9]{1,})/)[1]
-console.log(vc.aria2.pid);
-vc.openAria2();
+await vc.getStatus();
 
+vc.openAria2();
 
     })()
 
@@ -310,8 +321,9 @@ console.log('服务器连接断开')
 	},
 
 	beforeDestroy(){
+   closeEngine();
 		ws.close();
-    closeEngine();
+   
 	},
   computed:{
 Rdnd(){
@@ -325,26 +337,55 @@ Rdnd(){
 
 
   methods:{ 
-    openAria2(){
-      console.log(this)
-if(this.aria2.status.match(/信息: 没有运行的任务匹配指定标准。/)){
-  proc.exec('cd '+ `"${path.resolve('./public/aria2/')}"`+'&aria2c.exe --conf-path=aria2.conf',{ encoding: 'buffer' },(err,res)=>{
+    refresh(){
+location.reload();
+    },
+    openAria2:async function(){
+     
+  await this.getStatus();
+
+if(this.aria2.status.match(/信息: 没有运行的任务匹配指定标准。/)||this.aria2.status.match(/INFO: No tasks are running which match the specified criteria/)){
+   this.aria2.con='正在尝试连接'
+         
+  await proc.exec('cd '+ `"${path.resolve('./public/aria2/')}"`+'&aria2c.exe --conf-path=aria2.conf',{ encoding: 'buffer' },(err,res)=>{
   console.log(err,iconv.decode(res,'cp936'))
+resolve();
+
+
 })
+    this.aria2.con='下载引擎已连接'
+   await this.getStatus();
 }
 
 },
-    closeEngine(){
-           /* if(this.aria2.pid){
-              kill(this.aria2.pid,'SIGKILL',(err)=>{console.log(err)})
-            }*/
+    closeEngine:async function(){
+await this.getStatus();
+            if(this.aria2.pid){
+              console.log('尝试关闭中')
+console.log(`taskkill /pid ${this.aria2.pid}`)
+         await proc.exec(`taskkill /F /pid  ${this.aria2.pid}`,(err,res)=>{
+          this.aria2.con='下载引擎未连接';
+          console.log('unc')
+          resolve()
+            
+          })
+     await  this.getStatus();
+            }
     },
     getStatus(){
+      const vc=this;
       return new Promise((resolve,reject)=>{
-      console.log(`${path.resolve(publicpath,'Status.bat')}`)
+        console.log('getstatus')
+      console.log(`${path.resolve(vc.publicpath,'Status.bat')}`)
 const sta=proc.exec(`H:\\ROREL\\aria2-1.36.0-win-64bit-build1\\Status.bat`,{ encoding: 'buffer' },(err,res)=>{
  
   this.aria2.status=iconv.decode(res,'CP936');
+
+      const status=iconv.decode(res,'CP936');
+      if(status.match(/PID:.*?([0-9]{1,})/)){
+vc.aria2.pid=status.match(/PID:.*?([0-9]{1,})/)[1]||null
+}
+console.log(vc.aria2.pid);
   resolve(iconv.decode(res,'CP936'))
 })
 
@@ -354,7 +395,7 @@ setTimeout(() => {
 
  
 
-}, 1000);
+},1000);
 
 
       })
@@ -363,7 +404,7 @@ setTimeout(() => {
     ,
     tst(x){
 
-      const p=path.resolve(publicpath,x.dir)
+      const p=path.resolve(this.publicpath,x.dir)
      
 
 
@@ -729,9 +770,7 @@ left: 40px;
   user-select: none;
   margin: 10px 20px;
 }
-.red{
-  color:red;
-}
+
 .btntop{
   border: none;
   border-radius: 3px;
@@ -741,5 +780,12 @@ left: 40px;
 font-size: 18px;
   float: left;
    margin: 10px 20px;
+}
+.red{
+  color:red;
+}
+.path{
+  width: 200px;
+ 
 }
 </style>

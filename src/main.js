@@ -18,6 +18,8 @@ import './CSS/element-ui-reset.less'
 
 import store from './store'
 
+const electron = window.require("electron");
+Vue.prototype.$electron = electron;
 
 /*Vue.use(animate)*/
 
