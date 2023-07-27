@@ -17,9 +17,7 @@
   <div style="font-weight: 400;width: 100%;text-align: center;margin: 20px 0;">添加链接或口令</div>
 
 <textarea v-model="newTask" class="textarea" rows="8"></textarea>
-<p style="font-size: 10px;">下载到:</p>
-<div class="outin"><input class="input"></div>
-<div :class="Rdnd" @click='Post'>立即下载</div>
+<div class="Rdnd-active" @click='Post'>立即下载</div>
 </div>
 
 
@@ -172,6 +170,7 @@ iconv.skipDecodeWarning = true;
 const proc = window.require('child_process');
 const path = window.require('path');
 
+const publicpath=path.join(__dirname,'../../aria2');
 
 	const Process=()=>import('../components/Process');
  
@@ -184,7 +183,7 @@ data(){
 	return {data:'sth to send',
          todel:null,
          newTask:null,
-         publicpath:'./public/aria2',
+         publicpath:'./aria2',
           tasks:{
             active:[],
             waiting:[],
@@ -259,7 +258,7 @@ resolve();
 ws.addEventListener('message',(e)=>{
 
  vc.$nextTick(()=>{
-
+console.log(e)
 
 const div=document.querySelector('#display')
 const res=JSON.parse(e.data)
@@ -328,7 +327,7 @@ console.log('服务器连接断开')
   computed:{
 Rdnd(){
 
-  return this.newTask.match(/^magnet:\?xt=urn:btih:[0-9a-fA-F]{40,}.*$/)?'Rdnd-active':'Rdnd'
+  return 1;
 }
 
 
@@ -345,15 +344,10 @@ location.reload();
   await this.getStatus();
 
 if(this.aria2.status.match(/信息: 没有运行的任务匹配指定标准。/)||this.aria2.status.match(/INFO: No tasks are running which match the specified criteria/)){
-   this.aria2.con='正在尝试连接'
+ 
          
-  await proc.exec('cd '+ `"${path.resolve('./public/aria2/')}"`+'&aria2c.exe --conf-path=aria2.conf',{ encoding: 'buffer' },(err,res)=>{
-  console.log(err,iconv.decode(res,'cp936'))
-resolve();
 
-
-})
-    this.aria2.con='下载引擎已连接'
+  
    await this.getStatus();
 }
 
@@ -377,16 +371,10 @@ console.log(`taskkill /pid ${this.aria2.pid}`)
       return new Promise((resolve,reject)=>{
         console.log('getstatus')
       console.log(`${path.resolve(vc.publicpath,'Status.bat')}`)
-const sta=proc.exec(`H:\\ROREL\\aria2-1.36.0-win-64bit-build1\\Status.bat`,{ encoding: 'buffer' },(err,res)=>{
+const sta=proc.exec(`${publicpath}\\Status.bat`,{ encoding: 'buffer' },(err,res)=>{
  
-  this.aria2.status=iconv.decode(res,'CP936');
-
-      const status=iconv.decode(res,'CP936');
-      if(status.match(/PID:.*?([0-9]{1,})/)){
-vc.aria2.pid=status.match(/PID:.*?([0-9]{1,})/)[1]||null
-}
-console.log(vc.aria2.pid);
-  resolve(iconv.decode(res,'CP936'))
+  this.aria2.status=res;
+  resolve(res)
 })
 
 setTimeout(() => {
@@ -404,7 +392,7 @@ setTimeout(() => {
     ,
     tst(x){
 
-      const p=path.resolve(this.publicpath,x.dir)
+    const p=path.resolve(__dirname,'../../Download',x.dir)
      
 
 
@@ -418,14 +406,22 @@ proc.exec('explorer '+`"${p}"`,(err,res)=>{
     },
     Post(){
 
-if(this.newTask.match(/^magnet:\?xt=urn:btih:[0-9a-fA-F]{40,}.*$/)){
+if(1){
 
 this.ws.send(JSON.stringify(
     {'jsonrpc':'2.0', 
     'id':`Rdnd${this.count++}`,
     'method':'aria2.addUri', 
-    'params':[[this.newTask]]}))
+    'params':[[this.newTask]],
+    'dir':'../Download',
 
+
+
+  })
+    
+
+);
+    
 this.newTask=null;
    
 }

@@ -11,7 +11,7 @@ module.exports = defineConfig({
            electronBuilder: {
         builderOptions: {
            extraResources: [
-                {from: './public/aria2', to: '../public/aria2'}
+                {from: './public/aria2', to: '../aria2'}
             ]
         }
     }
