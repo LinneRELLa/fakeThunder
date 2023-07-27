@@ -4,7 +4,7 @@ import { app, protocol, BrowserWindow } from 'electron'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
 const isDevelopment = process.env.NODE_ENV !== 'production'
-
+const { ipcMain } = require('electron')
 
 const {  execFile,spawn } = require('child_process');
 
@@ -33,6 +33,7 @@ child.on('close', (code) => {
 /*child.kill(); windows环境下结束进程*/
 function killtask(FileName){
 
+return new Promise(res=>{
 
 const killarg=spawn('cmd.exe',['/c', `chcp 65001 & TASKKILL /F /IM ${FileName}`]);
 
@@ -42,11 +43,16 @@ killarg.stdout.on('data', (data) => {
 
 killarg.stderr.on('data', (data) => {
   console.error(`错误：${data}`);
+  res();
 });
 
 killarg.on('close', (code) => {
   console.log(`子进程退出码：kill:${code}`);
+  res();
 });
+
+})
+
 }
 
 /*        -------------            */
@@ -71,6 +77,15 @@ async function createWindow() {
       enabkeRemoteModule:true,
     }
   })
+    ipcMain.on('window-min',function (){
+ win.minimize();
+ })
+
+    ipcMain.on('window-close',async function (){
+await killtask('aria2c.exe')
+
+app.quit();
+ })
 
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     // Load the url of the dev server if in development mode
@@ -131,11 +146,11 @@ if (isDevelopment) {
 }
 
 
-app.on('before-quit', async function () {
-
+/*app.on('before-quit', async function () {
+console.log('kill')
   await killtask('aria2c.exe');
 })
-
+*/
 
 
 
